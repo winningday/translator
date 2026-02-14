@@ -54,7 +54,10 @@ Only translate the text content.
 5. **Glossary**: When provided, always use the glossary translations for the \
 specified Chinese terms. The glossary overrides your own judgment.
 
-6. **Output format**: Return ONLY a valid JSON array. Each element must have \
+6. **Plain ASCII punctuation**: Use straight quotes (' and "), plain hyphens (-), \
+and three dots (...) — never curly/smart quotes, em dashes, or typographic symbols.
+
+7. **Output format**: Return ONLY a valid JSON array. Each element must have \
 keys "index" (int) and "text" (string). No markdown fencing, no extra commentary.
 """
 
@@ -217,6 +220,26 @@ def _build_batch_prompt(
     return "\n".join(lines)
 
 
+def _normalize_quotes(text: str) -> str:
+    """Replace smart/curly quotes and other typographic symbols with plain ASCII.
+
+    LLMs sometimes produce Word-style curly quotes (\u2018 \u2019 \u201c \u201d)
+    or other fancy punctuation.  Subtitle files should use straight quotes.
+    """
+    replacements = {
+        "\u2018": "'",   # left single curly quote
+        "\u2019": "'",   # right single curly quote / apostrophe
+        "\u201c": '"',   # left double curly quote
+        "\u201d": '"',   # right double curly quote
+        "\u2013": "-",   # en dash
+        "\u2014": "--",  # em dash
+        "\u2026": "...", # ellipsis
+    }
+    for fancy, plain in replacements.items():
+        text = text.replace(fancy, plain)
+    return text
+
+
 def _parse_llm_response(raw: str) -> list[dict]:
     """Parse the LLM's JSON response, handling minor formatting issues."""
     # Strip markdown code fences if present
@@ -330,7 +353,7 @@ def translate_subtitles(
             # Only store if it's in the non-overlap portion, or if we
             # haven't translated it yet (first batch has no overlap)
             if idx not in translated:
-                translated[idx] = item["text"]
+                translated[idx] = _normalize_quotes(item["text"])
 
         # Advance past the non-overlap portion
         if end >= len(subtitles):

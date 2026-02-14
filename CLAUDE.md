@@ -44,16 +44,17 @@ translate-srt input/lesson1.srt -o output/lesson1_en.srt --review-log output/rev
 
 ## Glossary CSV format
 
-The glossary CSV must have a header row with columns `chinese`, `english`, and optionally `notes`:
+The glossary CSV must have a header row with columns `Chinese`, `English`, `Category` (optional), and `Notes` (optional):
 
 ```csv
-chinese,english,notes
-毛笔,brush,
-调色盘,palette,
-留白,negative space,intentional unpainted area
+Chinese,English,Category,Notes
+毛笔,brush,Material,Chinese calligraphy/painting brush
+调色盘,palette,Material,Surface for mixing paint
+留白,preserving whites,Technique,Keeping areas of paper unpainted
+晕染,blending / wet blending,Technique,"Intentional soft diffusion of color on wet paper, controlled bleeding"
 ```
 
-Place your glossary file anywhere and pass it with `-g`.
+See `watercolor_terminology_zh_en.csv` for the full reference glossary. Place your glossary file anywhere and pass it with `-g`.
 
 ## How it works
 
