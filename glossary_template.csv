@@ -1,12 +1,12 @@
-chinese,english,notes
-毛笔,brush,Chinese calligraphy/painting brush
-调色盘,palette,
-颜料,pigment,
-水彩,watercolor,
-铅笔,pencil,
-橡皮,eraser,
-留白,negative space,intentional unpainted area
-渲染,wash,wet watercolor technique
-晕染,blending,soft color transition
-轮廓,outline,
-构图,composition,
+Chinese,English,Category,Notes
+毛笔,brush,Material,Chinese calligraphy/painting brush
+调色盘,palette,Material,Surface for mixing paint
+颜料,pigment,Material,
+水彩,watercolor,Material,
+铅笔,pencil,Material,
+橡皮,eraser,Material,
+留白,preserving whites,Technique,Keeping areas of paper unpainted
+渲染,wash,Technique,Wet watercolor technique
+晕染,blending / wet blending,Technique,Soft color transition
+轮廓,outline,General,
+构图,composition,Concept,
