@@ -71,6 +71,7 @@ class FlaggedSubtitle:
     end: str
     text: str
     reason: str
+    english_text: str = ""
 
 
 @dataclass
@@ -249,8 +250,37 @@ def _parse_llm_response(raw: str) -> list[dict]:
 
 
 def format_review_log(flagged: list[FlaggedSubtitle], phase_summary: str) -> str:
-    """Format flagged subtitles into a human-readable review log."""
-    lines = ["=" * 60, "REVIEW LOG — Phase Detection Summary", "=" * 60, ""]
+    """Format flagged subtitles into a bilingual review log.
+
+    Chinese section first (for the artist), then English section below.
+    """
+    lines = []
+
+    # --- Chinese section ---
+    lines.append("=" * 60)
+    lines.append("审核日志 — 需要人工检查的字幕")
+    lines.append("=" * 60)
+    lines.append("")
+
+    if not flagged:
+        lines.append("没有需要审核的字幕。所有阶段标注都有足够的上下文。")
+    else:
+        lines.append(f"共 {len(flagged)} 条字幕需要人工检查：")
+        lines.append("（以下字幕中的用词可能指素描阶段，也可能指上色阶段，请根据视频内容确认翻译是否正确。）")
+        lines.append("")
+        for item in flagged:
+            lines.append(f"  [{item.index}] {item.start} --> {item.end}")
+            lines.append(f"    原文: {item.text}")
+            if item.english_text:
+                lines.append(f"    译文: {item.english_text}")
+            lines.append("")
+
+    # --- English section ---
+    lines.append("")
+    lines.append("=" * 60)
+    lines.append("REVIEW LOG — Subtitles Flagged for Verification")
+    lines.append("=" * 60)
+    lines.append("")
     lines.append(phase_summary)
     lines.append("")
 
@@ -261,11 +291,15 @@ def format_review_log(flagged: list[FlaggedSubtitle], phase_summary: str) -> str
         lines.append(
             f"{len(flagged)} subtitle(s) flagged for human verification:"
         )
+        lines.append("(These subtitles contain terms that could refer to either the pencil sketching")
+        lines.append("or the watercolor painting phase. Please check the video to confirm.)")
         lines.append("")
         for item in flagged:
             lines.append(f"  [{item.index}] {item.start} --> {item.end}")
-            lines.append(f"    Text: {item.text}")
-            lines.append(f"    Flag: {item.reason}")
+            lines.append(f"    Chinese: {item.text}")
+            if item.english_text:
+                lines.append(f"    English: {item.english_text}")
+            lines.append(f"    Reason:  {item.reason}")
             lines.append("")
 
     lines.append("=" * 60)
@@ -371,6 +405,10 @@ def translate_subtitles(
                 text=translated.get(sub.index, sub.text),
             )
         )
+
+    # Attach English translations to flagged items for the review log
+    for item in flagged:
+        item.english_text = translated.get(item.index, "")
 
     return TranslationResult(
         subtitles=output,
