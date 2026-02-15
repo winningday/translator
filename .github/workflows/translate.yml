@@ -1,0 +1,62 @@
+name: Translate Subtitles
+
+on:
+  # Auto-trigger when SRT files are added/changed in input/
+  push:
+    paths:
+      - 'input/*.srt'
+
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install translator
+        run: pip install -e .
+
+      - name: Check for SRT files
+        id: check
+        run: |
+          if ls input/*.srt 1>/dev/null 2>&1; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "No SRT files found in input/ — nothing to translate."
+          fi
+
+      - name: Translate all SRT files
+        if: steps.check.outputs.has_files == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          mkdir -p output
+          translate-srt input/ \
+            -g watercolor_terminology_zh_en.csv \
+            -o output/ \
+            --review-log output/review.log
+
+      - name: Commit translated files
+        if: steps.check.outputs.has_files == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Add translated subtitles and review log"
+            git push
+          fi

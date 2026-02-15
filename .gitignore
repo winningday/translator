@@ -5,5 +5,7 @@ dist/
 build/
 .venv/
 *.srt
+# But allow SRT files in input/ so the workflow can pick them up
+!input/*.srt
 !glossary_template.csv
 glossary.csv
