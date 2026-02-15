@@ -7,3 +7,4 @@ build/
 *.srt
 !glossary_template.csv
 glossary.csv
+drive_sync/
